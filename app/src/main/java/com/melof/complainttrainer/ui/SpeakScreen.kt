@@ -5,9 +5,7 @@ import android.content.Intent
 import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Mic
@@ -16,8 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -119,41 +117,32 @@ fun SpeakScreen(
 
                 Divider(color = Color(0xFFE0E0E0))
 
-                // 音声認識結果表示エリア
-                Box(
+                // 音声認識結果 + 手動編集エリア
+                OutlinedTextField(
+                    value = localText,
+                    onValueChange = { localText = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                        .heightIn(min = 80.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (localText.isEmpty()) {
+                        .heightIn(min = 96.dp),
+                    placeholder = {
                         Text(
-                            text = "マイクボタンを押して話してください",
+                            text = "マイクボタンを押して話す\nまたはここに直接入力",
                             color = Color(0xFFAAAAAA),
                             fontSize = 14.sp,
-                            textAlign = TextAlign.Center
+                            lineHeight = 22.sp
                         )
-                    } else {
+                    },
+                    label = { Text("返答") },
+                    supportingText = {
                         Text(
-                            text = localText,
-                            fontSize = 15.sp,
-                            lineHeight = 24.sp,
-                            modifier = Modifier.fillMaxWidth()
+                            text = "${localText.length}文字${if (localText.length > 80) "　⚠ 長め" else ""}",
+                            color = if (localText.length > 80) Color(0xFFE65100) else Color(0xFF9E9E9E)
                         )
-                    }
-                }
-
-                // 文字数表示
-                if (localText.isNotEmpty()) {
-                    Text(
-                        text = "${localText.length}文字${if (localText.length > 80) "　⚠ 長め" else ""}",
-                        fontSize = 11.sp,
-                        color = if (localText.length > 80) Color(0xFFE65100) else Color(0xFF9E9E9E),
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                }
+                    },
+                    isError = localText.length > 80,
+                    minLines = 3,
+                    textStyle = TextStyle(fontSize = 15.sp)
+                )
 
                 // マイクボタン
                 Button(
