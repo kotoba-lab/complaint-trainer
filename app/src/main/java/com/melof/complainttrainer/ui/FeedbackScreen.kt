@@ -4,11 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -83,10 +83,16 @@ fun FeedbackScreen(
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         // 必須カテゴリ
-                        requiredCategories.forEach { category ->
+                        requiredCategories.forEachIndexed { index, category ->
                             val achieved = score.categoryResults[category] == true
-                            CategoryRow(label = category.label, achieved = achieved, required = true)
-                            if (category != requiredCategories.last()) {
+                            CategoryRow(
+                                label = category.label,
+                                achieved = achieved,
+                                required = true,
+                                showRegister = !achieved,
+                                onRegister = { vm.registerPhrase(category, score.input) }
+                            )
+                            if (index != requiredCategories.lastIndex) {
                                 Divider(color = Color(0xFFF0F0F0), thickness = 0.5.dp)
                             }
                         }
@@ -96,7 +102,13 @@ fun FeedbackScreen(
                             .filter { it !in requiredCategories && score.categoryResults[it] == true }
                             .forEach { category ->
                                 Divider(color = Color(0xFFF0F0F0), thickness = 0.5.dp)
-                                CategoryRow(label = "${category.label}（ボーナス）", achieved = true, required = false)
+                                CategoryRow(
+                                    label = "${category.label}（ボーナス）",
+                                    achieved = true,
+                                    required = false,
+                                    showRegister = false,
+                                    onRegister = {}
+                                )
                             }
                     }
                 }
@@ -206,29 +218,72 @@ fun FeedbackScreen(
 }
 
 @Composable
-private fun CategoryRow(label: String, achieved: Boolean, required: Boolean) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = if (required) FontWeight.Medium else FontWeight.Normal,
-            color = if (required) Color(0xFF212121) else Color(0xFF757575)
-        )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            if (required && !achieved) {
-                Text(text = "必須", fontSize = 10.sp, color = Color(0xFFB00020))
+private fun CategoryRow(
+    label: String,
+    achieved: Boolean,
+    required: Boolean,
+    showRegister: Boolean,
+    onRegister: () -> Unit
+) {
+    var registered by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.padding(vertical = 6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                fontWeight = if (required) FontWeight.Medium else FontWeight.Normal,
+                color = if (required) Color(0xFF212121) else Color(0xFF757575)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (required && !achieved) {
+                    Text(text = "必須", fontSize = 10.sp, color = Color(0xFFB00020))
+                }
+                Icon(
+                    imageVector = if (achieved) Icons.Default.Check else Icons.Default.Close,
+                    contentDescription = null,
+                    tint = if (achieved) Color(0xFF2E7D32) else Color(0xFFB00020),
+                    modifier = Modifier.size(22.dp)
+                )
             }
-            Icon(
-                imageVector = if (achieved) Icons.Default.Check else Icons.Default.Close,
-                contentDescription = null,
-                tint = if (achieved) Color(0xFF2E7D32) else Color(0xFFB00020),
-                modifier = Modifier.size(22.dp)
+        }
+
+        // ❌ かつ未登録の場合のみ「この表現を登録」ボタンを表示
+        if (showRegister && !registered) {
+            TextButton(
+                onClick = {
+                    onRegister()
+                    registered = true
+                },
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                modifier = Modifier.height(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.AddCircleOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp),
+                    tint = Color(0xFF4A6FA5)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "この表現をOKとして登録する",
+                    fontSize = 12.sp,
+                    color = Color(0xFF4A6FA5)
+                )
+            }
+        } else if (showRegister && registered) {
+            Text(
+                text = "✓ 登録しました",
+                fontSize = 12.sp,
+                color = Color(0xFF2E7D32),
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
             )
         }
     }

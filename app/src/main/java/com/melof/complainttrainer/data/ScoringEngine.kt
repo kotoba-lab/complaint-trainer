@@ -5,18 +5,26 @@ object ScoringEngine {
     // 80文字を超えたら「長すぎる」と判定
     private const val LONG_THRESHOLD = 80
 
-    fun evaluate(input: String): ScoreResult {
+    fun evaluate(
+        input: String,
+        userPhrases: Map<ResponseCategory, List<String>> = emptyMap()
+    ): ScoreResult {
         val text = input.replace("　", " ").trim()
+
+        fun matches(builtIn: List<String>, category: ResponseCategory): Boolean {
+            val custom = userPhrases[category] ?: emptyList()
+            return (builtIn + custom).any { text.contains(it) }
+        }
 
         val categoryResults = mapOf(
             ResponseCategory.APOLOGY to
-                SynonymDictionary.apologyPhrases.any { text.contains(it) },
+                matches(SynonymDictionary.apologyPhrases, ResponseCategory.APOLOGY),
             ResponseCategory.CONFIRMATION to
-                SynonymDictionary.confirmationPhrases.any { text.contains(it) },
+                matches(SynonymDictionary.confirmationPhrases, ResponseCategory.CONFIRMATION),
             ResponseCategory.ORGANIZATION to
-                SynonymDictionary.organizationPhrases.any { text.contains(it) },
+                matches(SynonymDictionary.organizationPhrases, ResponseCategory.ORGANIZATION),
             ResponseCategory.BOUNDARY_SETTING to
-                SynonymDictionary.boundaryPhrases.any { text.contains(it) }
+                matches(SynonymDictionary.boundaryPhrases, ResponseCategory.BOUNDARY_SETTING)
         )
 
         val foundNg = SynonymDictionary.ngWords.filter { text.contains(it) }
