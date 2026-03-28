@@ -6,6 +6,46 @@ object ScenarioRepository {
 
         // ── 難易度1：軽い苦情 ──────────────────────────────────────────
         Scenario(
+            id = "case_002",
+            difficulty = 1,
+            situation = "利用者がナースコールを押したが、職員がなかなか来なかった場面です。",
+            complaint = "さっきから呼んでるのに、全然来てくれないじゃない",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.CONFIRMATION),
+            hint = "謝罪 → 確認 の2文で返しましょう。言い訳は不要"
+        ),
+        Scenario(
+            id = "case_003",
+            difficulty = 1,
+            situation = "利用者が職員の声かけの仕方に不快感を示しています。",
+            complaint = "さっきの言い方、ちょっときつくなかった？",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.ACCEPTANCE),
+            hint = "感じさせてしまったことをまず受け止め、謝罪に繋げましょう"
+        ),
+        Scenario(
+            id = "case_004",
+            difficulty = 1,
+            situation = "利用者が自分の私物が動かされていたことに気づき、不満を言っています。",
+            complaint = "私の上着、勝手に場所変えましたよね？",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.CONFIRMATION),
+            hint = "不安な気持ちへの謝罪 → 保管場所の確認 の流れで"
+        ),
+        Scenario(
+            id = "case_005",
+            difficulty = 1,
+            situation = "利用者の家族から電話があり、請求書がまだ届いていないと言っています。",
+            complaint = "今月の請求書、まだ届いていませんけど",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.CONFIRMATION),
+            hint = "ご不便をおかけしたことへの謝罪 → 発送状況を確認する約束"
+        ),
+        Scenario(
+            id = "case_006",
+            difficulty = 1,
+            situation = "利用者が入浴の順番が最後だったことに不満を持っています。",
+            complaint = "なんで今日は私が最後なの？",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.CONFIRMATION),
+            hint = "不満な気持ちを受け止め、今日の流れを確認しましょう"
+        ),
+        Scenario(
             id = "easy_1",
             difficulty = 1,
             situation = "利用者の家族から電話がありました。先日のスタッフの対応について不満を持っているようです。",
@@ -31,6 +71,30 @@ object ScenarioRepository {
         ),
 
         // ── 難易度2：こじれ ───────────────────────────────────────────
+        Scenario(
+            id = "case_010",
+            difficulty = 2,
+            situation = "家族が、予定変更について事前に説明がなかったと怒っています。",
+            complaint = "何も聞いていません。どうして事前に説明がないんですか",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.CONFIRMATION),
+            hint = "説明不足だった点を謝罪し、どこで共有できていなかったか確認を約束しましょう"
+        ),
+        Scenario(
+            id = "case_011",
+            difficulty = 2,
+            situation = "家族が、職員に不適切な発言をされたと強く訴えています。",
+            complaint = "見た目が怖いって言われたんですけど",
+            targetCategories = listOf(ResponseCategory.APOLOGY, ResponseCategory.CONFIRMATION, ResponseCategory.ORGANIZATION),
+            hint = "傷つけた点を謝罪し、事業所として確認する姿勢を示しましょう"
+        ),
+        Scenario(
+            id = "case_012",
+            difficulty = 2,
+            situation = "電話で家族が感情的になっており、やり取りが堂々巡りになっています。",
+            complaint = "あなたじゃ話にならない。何回同じ説明するんですか",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.ORGANIZATION),
+            hint = "訂正・反論せず、組織対応に切り替えましょう"
+        ),
         Scenario(
             id = "medium_1",
             difficulty = 2,
@@ -61,6 +125,62 @@ object ScenarioRepository {
         ),
 
         // ── 難易度3：過大要求 ─────────────────────────────────────────
+        Scenario(
+            id = "case_014",
+            difficulty = 3,
+            situation = "興奮した家族が、施設長をすぐに電話に出すよう要求しています。",
+            complaint = "今すぐ施設長を電話に出してください",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.ORGANIZATION, ResponseCategory.BOUNDARY_SETTING),
+            hint = "お怒りを受け止め、責任者対応は手順を確認してからお伝えする形にしましょう"
+        ),
+        Scenario(
+            id = "case_015",
+            difficulty = 3,
+            situation = "相手がSNSへの拡散を示唆して圧力をかけています。",
+            complaint = "このままならSNSに全部書きますから",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.ORGANIZATION),
+            hint = "脅しに反応せず、強いご不満を受け止めて事業所対応へ移行しましょう"
+        ),
+        Scenario(
+            id = "case_016",
+            difficulty = 3,
+            situation = "相手が週刊誌・行政への通報を示唆して圧力をかけています。",
+            complaint = "週刊誌にも行政にも全部言います",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.CONFIRMATION, ResponseCategory.ORGANIZATION),
+            hint = "外部通報の示唆には直接反応せず、不信感を受け止めて事実確認・組織対応へ"
+        ),
+        Scenario(
+            id = "case_017",
+            difficulty = 3,
+            situation = "苦情が金銭要求に発展しました。",
+            complaint = "こんな対応をされたんだから、慰謝料を払ってください",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.BOUNDARY_SETTING, ResponseCategory.ORGANIZATION),
+            hint = "強いご不満は受け止め、金銭要求にはこの場でお答えできないと境界を示しましょう"
+        ),
+        Scenario(
+            id = "case_018",
+            difficulty = 3,
+            situation = "家族が施設内で居座り始め、その場を離れようとしません。",
+            complaint = "納得いくまでここを動きません",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.BOUNDARY_SETTING, ResponseCategory.ORGANIZATION),
+            hint = "納得できない気持ちを受け止め、事業所の手順で対応することを示しましょう"
+        ),
+        Scenario(
+            id = "case_019",
+            difficulty = 3,
+            situation = "相手が特定の職員への不信感を強め、別の人に代わるよう要求しています。",
+            complaint = "あなたでは話にならない。別の人に代わって",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.ORGANIZATION),
+            hint = "個人を守ろうとせず、組織として引き継ぐことを伝えましょう"
+        ),
+        Scenario(
+            id = "case_020",
+            difficulty = 3,
+            situation = "相手が「謝るだけでなく責任をとれ」と繰り返し圧をかけています。",
+            complaint = "だから謝るだけじゃなくて、どう責任とるのか聞いてるんですよ",
+            targetCategories = listOf(ResponseCategory.ACCEPTANCE, ResponseCategory.BOUNDARY_SETTING, ResponseCategory.ORGANIZATION),
+            hint = "納得できない気持ちを承り、確認できる内容は確認して組織として説明する形に持ち込みましょう"
+        ),
         Scenario(
             id = "hard_1",
             difficulty = 3,

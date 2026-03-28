@@ -295,6 +295,8 @@ private fun buildAdvice(score: ScoreResult, missingRequired: List<ResponseCatego
         when (cat) {
             ResponseCategory.APOLOGY ->
                 advice.add("「不快な思いをされた点はお詫びします」など、謝罪を入れてみましょう")
+            ResponseCategory.ACCEPTANCE ->
+                advice.add("「受け止めます」「承りました」など、相手の気持ちを受け止める言葉を入れてみましょう")
             ResponseCategory.CONFIRMATION ->
                 advice.add("「まず確認します」など、確認への移行を入れてみましょう")
             ResponseCategory.ORGANIZATION ->

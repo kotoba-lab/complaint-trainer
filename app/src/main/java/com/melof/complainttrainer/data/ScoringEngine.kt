@@ -19,6 +19,8 @@ object ScoringEngine {
         val categoryResults = mapOf(
             ResponseCategory.APOLOGY to
                 matches(SynonymDictionary.apologyPhrases, ResponseCategory.APOLOGY),
+            ResponseCategory.ACCEPTANCE to
+                matches(SynonymDictionary.acceptancePhrases, ResponseCategory.ACCEPTANCE),
             ResponseCategory.CONFIRMATION to
                 matches(SynonymDictionary.confirmationPhrases, ResponseCategory.CONFIRMATION),
             ResponseCategory.ORGANIZATION to

@@ -2,6 +2,7 @@ package com.melof.complainttrainer.data
 
 enum class ResponseCategory(val label: String) {
     APOLOGY("謝罪"),
+    ACCEPTANCE("受け止め"),
     CONFIRMATION("確認への移行"),
     ORGANIZATION("組織対応"),
     BOUNDARY_SETTING("境界設定")
