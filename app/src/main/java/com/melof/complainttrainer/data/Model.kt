@@ -14,18 +14,25 @@ data class Scenario(
     val situation: String,
     val complaint: String,
     val targetCategories: List<ResponseCategory>,
-    val hint: String = ""
+    val hint: String = "",
+    val sampleResponse: String = ""
 )
 
 data class ScoreResult(
     val input: String,
     val categoryResults: Map<ResponseCategory, Boolean>,
     val ngWordsFound: List<String>,
-    val tooLong: Boolean
+    val tooLong: Boolean,
+    val targetCategories: List<ResponseCategory> = emptyList()
 ) {
+    /** 必須カテゴリのうち達成した数 */
+    val requiredAchieved: Int
+        get() = targetCategories.count { categoryResults[it] == true }
+
+    /** 必須達成数からペナルティを引いたスコア */
     val totalScore: Int
         get() {
-            var s = categoryResults.values.count { it }
+            var s = requiredAchieved
             s -= ngWordsFound.size
             if (tooLong) s--
             return s.coerceAtLeast(0)

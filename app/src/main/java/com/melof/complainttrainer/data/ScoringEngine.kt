@@ -7,7 +7,8 @@ object ScoringEngine {
 
     fun evaluate(
         input: String,
-        userPhrases: Map<ResponseCategory, List<String>> = emptyMap()
+        userPhrases: Map<ResponseCategory, List<String>> = emptyMap(),
+        targetCategories: List<ResponseCategory> = emptyList()
     ): ScoreResult {
         val text = input.replace("　", " ").trim()
 
@@ -36,7 +37,8 @@ object ScoringEngine {
             input = input,
             categoryResults = categoryResults,
             ngWordsFound = foundNg,
-            tooLong = tooLong
+            tooLong = tooLong,
+            targetCategories = targetCategories
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +30,7 @@ fun FeedbackScreen(
 ) {
     val result by vm.scoreResult.collectAsStateWithLifecycle()
     val scenario by vm.currentScenario.collectAsStateWithLifecycle()
+    val userPhrases by vm.userPhrases.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -42,7 +44,7 @@ fun FeedbackScreen(
         }
     ) { padding ->
         result?.let { score ->
-            val requiredCategories = scenario?.targetCategories ?: emptyList()
+            val requiredCategories = score.targetCategories
 
             Column(
                 modifier = Modifier
@@ -90,14 +92,16 @@ fun FeedbackScreen(
                                 achieved = achieved,
                                 required = true,
                                 showRegister = !achieved,
-                                onRegister = { vm.registerPhrase(category, score.input) }
+                                suggestedPhrase = suggestPhrase(category),
+                                isAlreadyRegistered = userPhrases[category]?.isNotEmpty() == true,
+                                onRegister = { phrase -> vm.registerPhrase(category, phrase) }
                             )
                             if (index != requiredCategories.lastIndex) {
                                 Divider(color = Color(0xFFF0F0F0), thickness = 0.5.dp)
                             }
                         }
 
-                        // 必須でないが達成したカテゴリ
+                        // 必須でないが達成したカテゴリ（ボーナス）
                         ResponseCategory.values()
                             .filter { it !in requiredCategories && score.categoryResults[it] == true }
                             .forEach { category ->
@@ -107,6 +111,8 @@ fun FeedbackScreen(
                                     achieved = true,
                                     required = false,
                                     showRegister = false,
+                                    suggestedPhrase = "",
+                                    isAlreadyRegistered = false,
                                     onRegister = {}
                                 )
                             }
@@ -135,15 +141,21 @@ fun FeedbackScreen(
                     }
                 }
 
-                // スコアバッジ
+                // スコアバッジ（必須カテゴリ達成率ベース）
+                val requiredTotal = score.targetCategories.size
+                val requiredAchieved = score.requiredAchieved
+                val allClear = requiredAchieved == requiredTotal &&
+                        score.ngWordsFound.isEmpty() && !score.tooLong
+                val halfOrMore = requiredTotal > 0 &&
+                        requiredAchieved >= (requiredTotal + 1) / 2
                 val scoreColor = when {
-                    score.totalScore >= 3 -> Color(0xFF2E7D32)
-                    score.totalScore >= 2 -> Color(0xFFF57F17)
+                    allClear -> Color(0xFF2E7D32)
+                    halfOrMore -> Color(0xFFF57F17)
                     else -> Color(0xFFB00020)
                 }
                 val scoreLabel = when {
-                    score.totalScore >= 3 -> "よくできました"
-                    score.totalScore >= 2 -> "もう少し"
+                    allClear -> "よくできました"
+                    halfOrMore -> "もう少し"
                     else -> "要練習"
                 }
 
@@ -158,13 +170,63 @@ fun FeedbackScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "スコア ${score.totalScore}",
+                            text = "必須 $requiredAchieved / $requiredTotal",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = scoreColor
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = scoreLabel, fontSize = 16.sp, color = scoreColor)
+                    }
+                }
+
+                // 文例カード
+                val sample = scenario?.sampleResponse ?: ""
+                if (sample.isNotEmpty()) {
+                    var sampleExpanded by rememberSaveable { mutableStateOf(false) }
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "文例を見る",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF6A1B9A)
+                                )
+                                TextButton(
+                                    onClick = { sampleExpanded = !sampleExpanded },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                ) {
+                                    Text(
+                                        text = if (sampleExpanded) "閉じる" else "表示",
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF6A1B9A)
+                                    )
+                                }
+                            }
+                            if (sampleExpanded) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = sample,
+                                    fontSize = 14.sp,
+                                    lineHeight = 24.sp,
+                                    color = Color(0xFF212121)
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "※ これはあくまで一例です。自分の言葉でアレンジしてみましょう。",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF9E9E9E)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -223,9 +285,12 @@ private fun CategoryRow(
     achieved: Boolean,
     required: Boolean,
     showRegister: Boolean,
-    onRegister: () -> Unit
+    suggestedPhrase: String,
+    isAlreadyRegistered: Boolean,
+    onRegister: (String) -> Unit
 ) {
-    var registered by remember { mutableStateOf(false) }
+    var showEditor by rememberSaveable { mutableStateOf(false) }
+    var phraseText by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = Modifier.padding(vertical = 6.dp)) {
         Row(
@@ -255,38 +320,86 @@ private fun CategoryRow(
             }
         }
 
-        // ❌ かつ未登録の場合のみ「この表現を登録」ボタンを表示
-        if (showRegister && !registered) {
-            TextButton(
-                onClick = {
-                    onRegister()
-                    registered = true
-                },
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
-                modifier = Modifier.height(32.dp)
-            ) {
-                Icon(
-                    Icons.Default.AddCircleOutline,
-                    contentDescription = null,
-                    modifier = Modifier.size(15.dp),
-                    tint = Color(0xFF4A6FA5)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "この表現をOKとして登録する",
-                    fontSize = 12.sp,
-                    color = Color(0xFF4A6FA5)
-                )
+        // 未達かつ未登録の場合のみ登録UIを表示
+        if (showRegister) {
+            when {
+                isAlreadyRegistered -> {
+                    Text(
+                        text = "✓ 登録済み",
+                        fontSize = 12.sp,
+                        color = Color(0xFF2E7D32),
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
+                !showEditor -> {
+                    TextButton(
+                        onClick = {
+                            phraseText = suggestedPhrase
+                            showEditor = true
+                        },
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.AddCircleOutline,
+                            contentDescription = null,
+                            modifier = Modifier.size(15.dp),
+                            tint = Color(0xFF4A6FA5)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "OK表現を登録する",
+                            fontSize = 12.sp,
+                            color = Color(0xFF4A6FA5)
+                        )
+                    }
+                }
+                else -> {
+                    // インライン編集エリア
+                    Column(modifier = Modifier.padding(top = 4.dp)) {
+                        OutlinedTextField(
+                            value = phraseText,
+                            onValueChange = { if (it.length <= 40) phraseText = it },
+                            placeholder = { Text("短いフレーズを入力（40字以内）", fontSize = 12.sp) },
+                            singleLine = true,
+                            textStyle = LocalTextStyle.current.copy(fontSize = 13.sp),
+                            modifier = Modifier.fillMaxWidth(),
+                            supportingText = {
+                                Text("${phraseText.length}/40", fontSize = 11.sp)
+                            }
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { showEditor = false }) {
+                                Text("キャンセル", fontSize = 12.sp)
+                            }
+                            Button(
+                                onClick = {
+                                    if (phraseText.isNotBlank()) {
+                                        onRegister(phraseText.trim())
+                                        showEditor = false
+                                    }
+                                },
+                                enabled = phraseText.isNotBlank()
+                            ) {
+                                Text("保存", fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
             }
-        } else if (showRegister && registered) {
-            Text(
-                text = "✓ 登録しました",
-                fontSize = 12.sp,
-                color = Color(0xFF2E7D32),
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-            )
         }
     }
+}
+
+private fun suggestPhrase(category: ResponseCategory): String = when (category) {
+    ResponseCategory.APOLOGY -> "不快な思いをさせてしまい申し訳ありません"
+    ResponseCategory.ACCEPTANCE -> "そのようなお気持ちを受け止めます"
+    ResponseCategory.CONFIRMATION -> "まず詳しく確認させてください"
+    ResponseCategory.ORGANIZATION -> "事業所として対応いたします"
+    ResponseCategory.BOUNDARY_SETTING -> "その要求にはお答えできかねます"
 }
 
 private fun buildAdvice(score: ScoreResult, missingRequired: List<ResponseCategory>): List<String> {

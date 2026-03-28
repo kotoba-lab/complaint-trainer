@@ -34,7 +34,8 @@ class TrainerViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun submitResponse(text: String) {
-        _scoreResult.value = ScoringEngine.evaluate(text, userDict.loadAll())
+        val categories = _currentScenario.value?.targetCategories ?: emptyList()
+        _scoreResult.value = ScoringEngine.evaluate(text, userDict.loadAll(), categories)
     }
 
     fun retry() {
