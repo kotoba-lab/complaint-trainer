@@ -4,7 +4,6 @@ build/
 **/.gradle/
 **/build/
 local.properties
-gradle-wrapper.jar
 
 # Android Studio
 .idea/
