@@ -3,6 +3,7 @@ package com.melof.complainttrainer.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.melof.complainttrainer.data.ComplaintDifficulty
+import com.melof.complainttrainer.data.PracticeMode
 import com.melof.complainttrainer.data.ResponseCategory
 import com.melof.complainttrainer.data.Scenario
 import com.melof.complainttrainer.data.ScenarioRepository
@@ -23,14 +24,18 @@ class TrainerViewModel(app: Application) : AndroidViewModel(app) {
     private val _scoreResult = MutableStateFlow<ScoreResult?>(null)
     val scoreResult: StateFlow<ScoreResult?> = _scoreResult.asStateFlow()
 
+    private val _currentPlayMode = MutableStateFlow(PracticeMode.FREE)
+    val currentPlayMode: StateFlow<PracticeMode> = _currentPlayMode.asStateFlow()
+
     // 登録済みカスタム表現（画面に表示するために公開）
     private val _userPhrases = MutableStateFlow(userDict.loadAll())
     val userPhrases: StateFlow<Map<ResponseCategory, List<String>>> = _userPhrases.asStateFlow()
 
     val scenarios = ScenarioRepository.scenarios
 
-    fun selectScenario(scenario: Scenario) {
+    fun selectScenario(scenario: Scenario, playMode: PracticeMode = PracticeMode.FREE) {
         _currentScenario.value = scenario
+        _currentPlayMode.value = playMode
         _scoreResult.value = null
     }
 

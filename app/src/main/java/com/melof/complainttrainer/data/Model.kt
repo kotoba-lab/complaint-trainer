@@ -23,6 +23,21 @@ enum class ComplaintDifficulty(
     }
 }
 
+enum class PracticeMode(
+    val label: String,
+    val description: String,
+    val shortLabel: String,
+) {
+    CHOICE("選択式", "4択から無理のない返しを選ぶ", "4択"),
+    GUIDED("ガイド付き", "ねらいを見ながら自由に返す", "ガイド"),
+    FREE("自由回答", "ヒントなしで自分の言葉で返す", "自由"),
+}
+
+data class ChoiceOption(
+    val text: String,
+    val isCorrect: Boolean,
+)
+
 data class Scenario(
     val id: String,
     val difficulty: Int, // 1=軽い苦情, 2=こじれ, 3=過大要求

@@ -31,8 +31,8 @@ class MainActivity : ComponentActivity() {
                         composable("scenarios") {
                             ScenarioListScreen(
                                 vm = vm,
-                                onScenarioSelected = { scenario ->
-                                    vm.selectScenario(scenario)
+                                onScenarioSelected = { scenario, playMode ->
+                                    vm.selectScenario(scenario, playMode)
                                     navController.navigate("speak")
                                 }
                             )
