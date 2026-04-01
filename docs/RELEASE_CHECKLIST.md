@@ -90,7 +90,7 @@
 
 | ファイル | 場所 | 備考 |
 |---------|------|------|
-| `complaint-trainer-release.keystore` | プロジェクトルート（gitignored）| クラウドにもバックアップ推奨 |
+| `complaint-trainer-release.keystore` | プロジェクトルート（gitignored）| Google Drive / USBメモリ等にバックアップ推奨 |
 | `keystore.properties` | プロジェクトルート（gitignored）| パスワード記載 |
 
 keystore を失うと **同じアプリIDで更新版をリリースできなくなる**。
