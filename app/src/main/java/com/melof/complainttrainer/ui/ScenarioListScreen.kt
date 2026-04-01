@@ -1,16 +1,24 @@
 package com.melof.complainttrainer.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.melof.complainttrainer.data.ComplaintDifficulty
 import com.melof.complainttrainer.data.Scenario
 import com.melof.complainttrainer.viewmodel.TrainerViewModel
 
@@ -38,21 +46,24 @@ fun ScenarioListScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            listOf(
-                1 to "★　軽い苦情",
-                2 to "★★　こじれ",
-                3 to "★★★　過大要求"
-            ).forEach { (level, label) ->
+            item {
+                RandomStartCard(
+                    vm = vm,
+                    onScenarioSelected = onScenarioSelected
+                )
+            }
+
+            ComplaintDifficulty.entries.forEach { difficulty ->
                 item {
                     Text(
-                        text = label,
+                        text = "${difficulty.stars}　${difficulty.label}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
                         color = Color(0xFF333333),
                         modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                     )
                 }
-                items(vm.scenarios.filter { it.difficulty == level }) { scenario ->
+                items(vm.scenarios.filter { it.difficulty == difficulty.level }) { scenario ->
                     ScenarioCard(scenario = scenario, onClick = { onScenarioSelected(scenario) })
                 }
             }
@@ -63,16 +74,84 @@ fun ScenarioListScreen(
 }
 
 @Composable
-fun ScenarioCard(scenario: Scenario, onClick: () -> Unit) {
-    val bgColor = when (scenario.difficulty) {
-        1 -> Color(0xFFE8F5E9)
-        2 -> Color(0xFFFFF8E1)
-        else -> Color(0xFFFFEBEE)
+private fun RandomStartCard(
+    vm: TrainerViewModel,
+    onScenarioSelected: (Scenario) -> Unit,
+) {
+    var selectedDifficulty by remember { mutableStateOf<ComplaintDifficulty?>(null) }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F8FC)),
+        border = BorderStroke(1.dp, Color(0xFF4A6FA5).copy(alpha = 0.25f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(
+                text = "ランダムで始める",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                color = Color(0xFF35527C)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                FilterChip(
+                    selected = selectedDifficulty == null,
+                    onClick = { selectedDifficulty = null },
+                    label = { Text("全難易度", fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF4A6FA5),
+                        selectedLabelColor = Color.White
+                    )
+                )
+                ComplaintDifficulty.entries.forEach { difficulty ->
+                    FilterChip(
+                        selected = selectedDifficulty == difficulty,
+                        onClick = {
+                            selectedDifficulty =
+                                if (selectedDifficulty == difficulty) null else difficulty
+                        },
+                        label = { Text("${difficulty.stars} ${difficulty.label}", fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFF4A6FA5),
+                            selectedLabelColor = Color.White
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = {
+                    vm.randomScenario(selectedDifficulty)?.let(onScenarioSelected)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A6FA5))
+            ) {
+                Text(
+                    text = selectedDifficulty?.let { "「${it.label}」からランダム" } ?: "ランダムで始める",
+                    fontSize = 15.sp
+                )
+            }
+        }
     }
-    val borderColor = when (scenario.difficulty) {
-        1 -> Color(0xFF81C784)
-        2 -> Color(0xFFFFCA28)
-        else -> Color(0xFFEF9A9A)
+}
+
+@Composable
+fun ScenarioCard(scenario: Scenario, onClick: () -> Unit) {
+    val difficulty = ComplaintDifficulty.fromLevel(scenario.difficulty)
+    val bgColor = when (difficulty) {
+        ComplaintDifficulty.BEGINNER -> Color(0xFFE8F5E9)
+        ComplaintDifficulty.INTERMEDIATE -> Color(0xFFFFF8E1)
+        ComplaintDifficulty.ADVANCED, null -> Color(0xFFFFEBEE)
     }
 
     Card(

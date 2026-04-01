@@ -2,6 +2,7 @@ package com.melof.complainttrainer.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.melof.complainttrainer.data.ComplaintDifficulty
 import com.melof.complainttrainer.data.ResponseCategory
 import com.melof.complainttrainer.data.Scenario
 import com.melof.complainttrainer.data.ScenarioRepository
@@ -31,6 +32,15 @@ class TrainerViewModel(app: Application) : AndroidViewModel(app) {
     fun selectScenario(scenario: Scenario) {
         _currentScenario.value = scenario
         _scoreResult.value = null
+    }
+
+    fun randomScenario(difficulty: ComplaintDifficulty? = null): Scenario? {
+        val pool = if (difficulty == null) {
+            scenarios
+        } else {
+            scenarios.filter { it.difficulty == difficulty.level }
+        }
+        return pool.randomOrNull()
     }
 
     fun submitResponse(text: String) {

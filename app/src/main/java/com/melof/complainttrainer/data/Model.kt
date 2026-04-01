@@ -8,6 +8,21 @@ enum class ResponseCategory(val label: String) {
     BOUNDARY_SETTING("境界設定")
 }
 
+enum class ComplaintDifficulty(
+    val level: Int,
+    val label: String,
+    val stars: String,
+) {
+    BEGINNER(1, "軽い苦情", "★"),
+    INTERMEDIATE(2, "こじれ", "★★"),
+    ADVANCED(3, "過大要求", "★★★");
+
+    companion object {
+        fun fromLevel(level: Int): ComplaintDifficulty? =
+            entries.firstOrNull { it.level == level }
+    }
+}
+
 data class Scenario(
     val id: String,
     val difficulty: Int, // 1=軽い苦情, 2=こじれ, 3=過大要求
