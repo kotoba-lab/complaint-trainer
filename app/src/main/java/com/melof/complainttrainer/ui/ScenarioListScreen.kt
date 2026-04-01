@@ -47,6 +47,10 @@ fun ScenarioListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
+                HelpCard()
+            }
+
+            item {
                 RandomStartCard(
                     vm = vm,
                     onScenarioSelected = onScenarioSelected
@@ -69,6 +73,38 @@ fun ScenarioListScreen(
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun HelpCard() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC)),
+        border = BorderStroke(1.dp, Color(0xFF4A6FA5).copy(alpha = 0.18f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(
+                text = "使い方",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                color = Color(0xFF35527C)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "シナリオをタップすると、その場面の練習を始められます。",
+                fontSize = 12.sp,
+                color = Color(0xFF4B5563),
+                lineHeight = 18.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "「ランダムで始める」は全体、または選んだ難易度から1問を自動で出題します。",
+                fontSize = 12.sp,
+                color = Color(0xFF4B5563),
+                lineHeight = 18.sp
+            )
         }
     }
 }
