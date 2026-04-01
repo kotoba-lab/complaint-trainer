@@ -17,7 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.melof.complainttrainer.data.PracticeMode
 import com.melof.complainttrainer.data.ResponseCategory
+import com.melof.complainttrainer.data.SampleResponseFactory
 import com.melof.complainttrainer.data.ScoreResult
 import com.melof.complainttrainer.viewmodel.TrainerViewModel
 
@@ -30,6 +32,7 @@ fun FeedbackScreen(
 ) {
     val result by vm.scoreResult.collectAsStateWithLifecycle()
     val scenario by vm.currentScenario.collectAsStateWithLifecycle()
+    val playMode by vm.currentPlayMode.collectAsStateWithLifecycle()
     val userPhrases by vm.userPhrases.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -181,8 +184,8 @@ fun FeedbackScreen(
                 }
 
                 // 文例カード
-                val sample = scenario?.sampleResponse ?: ""
-                if (sample.isNotEmpty()) {
+                val samples = scenario?.let { SampleResponseFactory.buildSamples(it) }.orEmpty()
+                if (playMode != PracticeMode.CHOICE && samples.isNotEmpty()) {
                     var sampleExpanded by rememberSaveable { mutableStateOf(false) }
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5)),
@@ -213,15 +216,20 @@ fun FeedbackScreen(
                             }
                             if (sampleExpanded) {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = sample,
-                                    fontSize = 14.sp,
-                                    lineHeight = 24.sp,
-                                    color = Color(0xFF212121)
-                                )
+                                samples.forEachIndexed { index, sample ->
+                                    Text(
+                                        text = "例${index + 1}　$sample",
+                                        fontSize = 14.sp,
+                                        lineHeight = 24.sp,
+                                        color = Color(0xFF212121)
+                                    )
+                                    if (index != samples.lastIndex) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "※ これはあくまで一例です。自分の言葉でアレンジしてみましょう。",
+                                    text = "※ 相性のよい言い回しを選びつつ、自分の言葉に置き換えてみましょう。",
                                     fontSize = 11.sp,
                                     color = Color(0xFF9E9E9E)
                                 )
